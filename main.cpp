@@ -24,7 +24,7 @@ class Game {
         int mines;
         int cursorX;
         int cursorY;
-        Selection selectedSquare;
+        Selection selected;
         int checkMines(int x, int y);
         void draw();
         void generate(int mines);
@@ -36,7 +36,7 @@ Game::Game(int widthArg, int heightArg, int minesArg)
     , mines(minesArg)
     , cursorX(0)
     , cursorY(0)
-    , selectedSquare(Selection::NONE)
+    , selected(Selection::NONE)
     {
     // make a win and configure
     win = newwin(height + 1, width, 0, 0);
@@ -110,7 +110,7 @@ void Game::start() {
     generate(mines);
     while (1) {
         draw();
-        selectedSquare = Selection::NONE;
+        selected = Selection::NONE;
         auto key = wgetch(win);
         if (key == KEY_UP) {
             cursorY--;
@@ -123,9 +123,9 @@ void Game::start() {
         } else if (key == 'q') {
             return;
         } else if (key == '\n') {
-            selectedSquare = Selection::DISCOVER;
+            selected = Selection::DISCOVER;
         } else if (key == ' ') {
-            selectedSquare = Selection::FLAG;
+            selected = Selection::FLAG;
         }
         if (cursorX > width - 1) {
             cursorX = width - 1;
@@ -136,13 +136,19 @@ void Game::start() {
         } else if (cursorY < 0) {
             cursorY = 0;
         }
-        if (selectedSquare != Selection::NONE) {
+        if (selected != Selection::NONE) {
             Selection oldValue = selection[cursorX][cursorY];
-            Selection newValue = selectedSquare;
-            if (oldValue != Selection::DISCOVER) {
-                if (oldValue == Selection::FLAG && selectedSquare == Selection::FLAG) {
-                    newValue = Selection::NONE;
-                }
+            Selection newValue;
+            bool update = 1;
+            if (oldValue == Selection::FLAG && selected == Selection::FLAG) {
+                newValue = Selection::NONE;
+            } else if (oldValue == Selection::NONE) {
+                newValue = selected;
+            } else if ((oldValue == Selection::FLAG && selected == Selection::DISCOVER)
+            || oldValue == Selection::DISCOVER ) {
+                update = 0;
+            }
+            if (update) {
                 selection[cursorX][cursorY] = newValue;
             }
         }

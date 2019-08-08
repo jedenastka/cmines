@@ -28,6 +28,7 @@ class Game {
         int checkMines(int x, int y);
         void draw();
         void generate(int mines);
+        void logic();
 };
 
 Game::Game(int widthArg, int heightArg, int minesArg)
@@ -106,52 +107,56 @@ void Game::generate(int mines) {
     }
 }
 
+void Game::logic() {
+    selected = Selection::NONE;
+    auto key = wgetch(win);
+    if (key == KEY_UP) {
+        cursorY--;
+    } else if (key == KEY_DOWN) {
+        cursorY++;
+    } else if (key == KEY_RIGHT) {
+        cursorX++;
+    } else if (key == KEY_LEFT) {
+        cursorX--;
+    } else if (key == 'q') {
+        return;
+    } else if (key == '\n') {
+        selected = Selection::DISCOVER;
+    } else if (key == ' ') {
+        selected = Selection::FLAG;
+    }
+    if (cursorX > width - 1) {
+        cursorX = width - 1;
+    } else if (cursorX < 0) {
+        cursorX = 0;
+    } else if (cursorY > height - 1) {
+        cursorY = height - 1;
+    } else if (cursorY < 0) {
+        cursorY = 0;
+    }
+    if (selected != Selection::NONE) {
+        Selection oldValue = selection[cursorX][cursorY];
+        Selection newValue;
+        bool update = 1;
+        if (oldValue == Selection::FLAG && selected == Selection::FLAG) {
+            newValue = Selection::NONE;
+        } else if (oldValue == Selection::NONE) {
+            newValue = selected;
+        } else if ((oldValue == Selection::FLAG && selected == Selection::DISCOVER)
+        || oldValue == Selection::DISCOVER ) {
+            update = 0;
+        }
+        if (update) {
+            selection[cursorX][cursorY] = newValue;
+        }
+    }
+}
+
 void Game::start() {
     generate(mines);
     while (1) {
         draw();
-        selected = Selection::NONE;
-        auto key = wgetch(win);
-        if (key == KEY_UP) {
-            cursorY--;
-        } else if (key == KEY_DOWN) {
-            cursorY++;
-        } else if (key == KEY_RIGHT) {
-            cursorX++;
-        } else if (key == KEY_LEFT) {
-            cursorX--;
-        } else if (key == 'q') {
-            return;
-        } else if (key == '\n') {
-            selected = Selection::DISCOVER;
-        } else if (key == ' ') {
-            selected = Selection::FLAG;
-        }
-        if (cursorX > width - 1) {
-            cursorX = width - 1;
-        } else if (cursorX < 0) {
-            cursorX = 0;
-        } else if (cursorY > height - 1) {
-            cursorY = height - 1;
-        } else if (cursorY < 0) {
-            cursorY = 0;
-        }
-        if (selected != Selection::NONE) {
-            Selection oldValue = selection[cursorX][cursorY];
-            Selection newValue;
-            bool update = 1;
-            if (oldValue == Selection::FLAG && selected == Selection::FLAG) {
-                newValue = Selection::NONE;
-            } else if (oldValue == Selection::NONE) {
-                newValue = selected;
-            } else if ((oldValue == Selection::FLAG && selected == Selection::DISCOVER)
-            || oldValue == Selection::DISCOVER ) {
-                update = 0;
-            }
-            if (update) {
-                selection[cursorX][cursorY] = newValue;
-            }
-        }
+        logic();
     }
 }
 

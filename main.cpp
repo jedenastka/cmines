@@ -17,6 +17,7 @@ class Game {
             DISCOVER
         };
         WINDOW* win;
+        WINDOW* bar;
         bool minefield[10][10];
         Selection selection[10][10];
         int height;
@@ -31,6 +32,7 @@ class Game {
         void generate(int mines);
         void gameOver();
         void logic();
+        void updateBar();
 };
 
 Game::Game(int widthArg, int heightArg, int minesArg)
@@ -43,7 +45,8 @@ Game::Game(int widthArg, int heightArg, int minesArg)
     , gameEnd(0)
     {
     // make a win and configure
-    win = newwin(height + 1, width, 0, 0);
+    win = newwin(height + 1, width, 3, 2);
+    bar = newwin(3, 14, 0, 0);
     keypad(win, 1);
 }
 
@@ -174,8 +177,16 @@ void Game::logic() {
     }
 }
 
+void Game::updateBar() {
+    mvwaddch(bar, 1, 1, '0');
+    //wborder(bar, '|', '|', '-', '-', '+', '+', '+', '+');
+    box(bar, 0, 0);
+    wrefresh(bar);
+}
+
 void Game::start() {
     generate(mines);
+    updateBar();
     while (!gameEnd) {
         draw();
         logic();

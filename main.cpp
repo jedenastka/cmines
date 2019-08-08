@@ -25,6 +25,7 @@ class Game {
         int cursorX;
         int cursorY;
         Selection selected;
+        bool gameOver;
         int checkMines(int x, int y);
         void draw();
         void generate(int mines);
@@ -38,6 +39,7 @@ Game::Game(int widthArg, int heightArg, int minesArg)
     , cursorX(0)
     , cursorY(0)
     , selected(Selection::NONE)
+    , gameOver(0)
     {
     // make a win and configure
     win = newwin(height + 1, width, 0, 0);
@@ -150,14 +152,21 @@ void Game::logic() {
             selection[cursorX][cursorY] = newValue;
         }
     }
+    if (selection[cursorX][cursorY] == Selection::DISCOVER && minefield[cursorX][cursorY] == 1) {
+        gameOver = 1;
+    }
 }
 
 void Game::start() {
     generate(mines);
-    while (1) {
+    while (!gameOver) {
         draw();
         logic();
     }
+    clear();
+    printw("Game over!\n");
+    refresh();
+    getch();
 }
 
 int main() {

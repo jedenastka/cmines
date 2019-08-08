@@ -25,7 +25,7 @@ class Game {
         int cursorX;
         int cursorY;
         Selection selected;
-        bool gameOver;
+        bool gameEnd;
         int checkMines(int x, int y);
         void draw();
         void generate(int mines);
@@ -39,7 +39,7 @@ Game::Game(int widthArg, int heightArg, int minesArg)
     , cursorX(0)
     , cursorY(0)
     , selected(Selection::NONE)
-    , gameOver(0)
+    , gameEnd(0)
     {
     // make a win and configure
     win = newwin(height + 1, width, 0, 0);
@@ -112,20 +112,28 @@ void Game::generate(int mines) {
 void Game::logic() {
     selected = Selection::NONE;
     auto key = wgetch(win);
-    if (key == KEY_UP) {
-        cursorY--;
-    } else if (key == KEY_DOWN) {
-        cursorY++;
-    } else if (key == KEY_RIGHT) {
-        cursorX++;
-    } else if (key == KEY_LEFT) {
-        cursorX--;
-    } else if (key == 'q') {
-        return;
-    } else if (key == '\n') {
-        selected = Selection::DISCOVER;
-    } else if (key == ' ') {
-        selected = Selection::FLAG;
+    switch (key) {
+        case KEY_UP:
+            cursorY--;
+            break;
+        case KEY_DOWN:
+            cursorY++;
+            break;
+        case KEY_RIGHT:
+            cursorX++;
+            break;
+        case KEY_LEFT:
+            cursorX--;
+            break;
+        case 'q':
+            gameEnd = 1;
+            break;
+        case '\n':
+            selected = Selection::DISCOVER;
+            break;
+        case ' ':
+            selected = Selection::FLAG;
+            break;
     }
     if (cursorX > width - 1) {
         cursorX = width - 1;
@@ -153,20 +161,20 @@ void Game::logic() {
         }
     }
     if (selection[cursorX][cursorY] == Selection::DISCOVER && minefield[cursorX][cursorY] == 1) {
-        gameOver = 1;
+        gameEnd = 1;
+        clear();
+        printw("Game over!\n");
+        refresh();
+        getch();
     }
 }
 
 void Game::start() {
     generate(mines);
-    while (!gameOver) {
+    while (!gameEnd) {
         draw();
         logic();
     }
-    clear();
-    printw("Game over!\n");
-    refresh();
-    getch();
 }
 
 int main() {

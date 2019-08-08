@@ -11,15 +11,20 @@ class Game {
         Game(int widthArg, int heightArg, int minesArg);
         void start();
     private:
+        enum class Selection {
+            NONE,
+            FLAG,
+            DISCOVER
+        };
         WINDOW* win;
         bool minefield[10][10];
-        int selection[10][10];
+        Selection selection[10][10];
         int height;
         int width;
         int mines;
         int cursorX;
         int cursorY;
-        int selectedSquare;
+        Selection selectedSquare;
         int checkMines(int x, int y);
         void draw();
         void generate(int mines);
@@ -31,7 +36,7 @@ Game::Game(int widthArg, int heightArg, int minesArg)
     , mines(minesArg)
     , cursorX(0)
     , cursorY(0)
-    , selectedSquare(0)
+    , selectedSquare(Selection::NONE)
     {
     // make a win and configure
     win = newwin(height + 1, width, 0, 0);
@@ -59,9 +64,9 @@ void Game::draw() {
             if (cursorOn) {
                 wattron(win, A_UNDERLINE);
             }
-            if (selection[j][i] == 0) {
+            if (selection[j][i] == Selection::NONE) {
                 wprintw(win, "%%");
-            } else if (selection[j][i] == 1) {
+            } else if (selection[j][i] == Selection::DISCOVER) {
                 if (minefield[j][i] == 0) {
                     int mines = checkMines(j, i);
                     if (mines > 0) {
@@ -72,7 +77,7 @@ void Game::draw() {
                 } else {
                     wprintw(win, "X");
                 }
-            } else if (selection[j][i] == 2) {
+            } else if (selection[j][i] == Selection::FLAG) {
                 wprintw(win, "+");
             }
             if (cursorOn) {
@@ -86,7 +91,7 @@ void Game::generate(int mines) {
     for (int i = 0; i < height; i++) {
         for(int j = 0; j < width; j++) {
             minefield[j][i] = 0;
-            selection[j][i] = 0;
+            selection[j][i] = Selection::NONE;
         }
     }
     for (int i = 0; i < mines; i++) {
@@ -105,7 +110,7 @@ void Game::start() {
     generate(mines);
     while (1) {
         draw();
-        selectedSquare = 0;
+        selectedSquare = Selection::NONE;
         auto key = wgetch(win);
         if (key == KEY_UP) {
             cursorY--;
@@ -118,9 +123,9 @@ void Game::start() {
         } else if (key == 'q') {
             return;
         } else if (key == '\n') {
-            selectedSquare = 1;
+            selectedSquare = Selection::DISCOVER;
         } else if (key == ' ') {
-            selectedSquare = 2;
+            selectedSquare = Selection::FLAG;
         }
         if (cursorX > width - 1) {
             cursorX = width - 1;
@@ -131,12 +136,12 @@ void Game::start() {
         } else if (cursorY < 0) {
             cursorY = 0;
         }
-        if (selectedSquare > 0) {
-            int oldValue = selection[cursorX][cursorY];
-            int newValue = selectedSquare;
-            if (oldValue != 1) {
-                if (oldValue == 2 && selectedSquare == 2) {
-                    newValue = 0;
+        if (selectedSquare != Selection::NONE) {
+            Selection oldValue = selection[cursorX][cursorY];
+            Selection newValue = selectedSquare;
+            if (oldValue != Selection::DISCOVER) {
+                if (oldValue == Selection::FLAG && selectedSquare == Selection::FLAG) {
+                    newValue = Selection::NONE;
                 }
                 selection[cursorX][cursorY] = newValue;
             }

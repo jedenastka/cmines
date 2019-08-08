@@ -1,6 +1,7 @@
 #include <ncurses.h>
 #include <cstdlib>
 #include <ctime>
+#include <string>
 
 int random(int from, int to) {
     return rand() % (to + 1) + from;
@@ -45,7 +46,7 @@ Game::Game(int widthArg, int heightArg, int minesArg)
     , gameEnd(0)
     {
     // make a win and configure
-    win = newwin(height + 1, width, 3, 2);
+    win = newwin(height + 2, width + 2, 3, 0);
     bar = newwin(3, 14, 0, 0);
     keypad(win, 1);
 }
@@ -68,25 +69,27 @@ void Game::draw() {
     for (int i = 0; i < height; i++) {
         for(int j = 0; j < width; j++) {
             bool cursorOn = j == cursorX && i == cursorY;
-            if (cursorOn) {
-                wattron(win, A_UNDERLINE);
-            }
+            char tile;
             if (selection[j][i] == Selection::NONE) {
-                wprintw(win, "%%");
+                tile = '%';
             } else if (selection[j][i] == Selection::DISCOVER) {
                 if (minefield[j][i] == 0) {
                     int mines = checkMines(j, i);
                     if (mines > 0) {
-                        wprintw(win, "%i", mines);
+                        tile = std::to_string(mines)[0];
                     } else {
-                        wprintw(win, " ");
+                        tile = ' ';
                     }
                 } else {
-                    wprintw(win, "X");
+                    tile = 'X';
                 }
             } else if (selection[j][i] == Selection::FLAG) {
-                wprintw(win, "+");
+                tile = '!';
             }
+            if (cursorOn) {
+                wattron(win, A_UNDERLINE);
+            }
+            mvwaddch(win, i + 2, j + 2, tile);
             if (cursorOn) {
                 wattroff(win, A_UNDERLINE);
             }

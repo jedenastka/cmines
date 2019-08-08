@@ -2,6 +2,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <string>
+#include <sstream>
+#include <iomanip>
+#include <cstring>
 
 int random(int from, int to) {
     return rand() % (to + 1) + from;
@@ -183,8 +186,19 @@ void Game::logic() {
 }
 
 void Game::updateBar() {
-    mvwaddch(bar, 1, 1, '0');
-    //wborder(bar, '|', '|', '-', '-', '+', '+', '+', '+');
+    int remainingMines = 10;
+    int timer = 999;
+    std::stringstream ss;
+    wmove(bar, 1, 2);
+    ss << std::setfill('0') << std::setw(3) << remainingMines;
+    wprintw(bar, ss.str().c_str());
+    wmove(bar, 1, 6);
+    wprintw(bar, ":)");
+    wmove(bar, 1, 9);
+    ss.str("");
+    ss.clear();
+    ss << std::setfill('0') << std::setw(3) << timer;
+    wprintw(bar, ss.str().c_str());
     box(bar, 0, 0);
     wrefresh(bar);
 }

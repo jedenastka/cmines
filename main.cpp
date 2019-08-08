@@ -46,7 +46,7 @@ Game::Game(int widthArg, int heightArg, int minesArg)
     , gameEnd(0)
     {
     // make a win and configure
-    win = newwin(height + 2, width + 2, 3, 0);
+    win = newwin(height + 2, width + 4, 3, 0);
     bar = newwin(3, 14, 0, 0);
     keypad(win, 1);
 }
@@ -89,12 +89,14 @@ void Game::draw() {
             if (cursorOn) {
                 wattron(win, A_UNDERLINE);
             }
-            mvwaddch(win, i + 2, j + 2, tile);
+            mvwaddch(win, i + 1, j + 2, tile);
             if (cursorOn) {
                 wattroff(win, A_UNDERLINE);
             }
         }
     }
+    box(win, 0, 0);
+    wrefresh(win);
 }
 
 void Game::generate(int mines) {

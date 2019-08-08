@@ -29,6 +29,7 @@ class Game {
         int checkMines(int x, int y);
         void draw();
         void generate(int mines);
+        void gameOver();
         void logic();
 };
 
@@ -109,6 +110,14 @@ void Game::generate(int mines) {
     }
 }
 
+void Game::gameOver() {
+    gameEnd = 1;
+    clear();
+    printw("Game over!\n");
+    refresh();
+    getch();
+}
+
 void Game::logic() {
     selected = Selection::NONE;
     auto key = wgetch(win);
@@ -161,11 +170,7 @@ void Game::logic() {
         }
     }
     if (selection[cursorX][cursorY] == Selection::DISCOVER && minefield[cursorX][cursorY] == 1) {
-        gameEnd = 1;
-        clear();
-        printw("Game over!\n");
-        refresh();
-        getch();
+        gameOver();
     }
 }
 

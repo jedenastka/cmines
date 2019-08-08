@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+#include <map>
 
 int random(int from, int to) {
     return rand() % (to + 1) + from;
@@ -20,8 +21,15 @@ class Game {
             FLAG,
             DISCOVER
         };
+        enum class Status {
+            IDLE,
+            MAKING_MOVE,
+            WIN,
+            GAME_OVER
+        };
         WINDOW* win;
         WINDOW* bar;
+        std::map<Status, std::string> faces;
         bool minefield[10][10];
         Selection selection[10][10];
         int height;
@@ -50,8 +58,14 @@ Game::Game(int widthArg, int heightArg, int minesArg)
     {
     // make a win and configure
     win = newwin(height + 2, width + 4, 3, 0);
-    bar = newwin(3, 14, 0, 0);
     keypad(win, 1);
+    // make bar and configure
+    bar = newwin(3, 14, 0, 0);
+    // initialise faces map
+    faces[Status::IDLE] = ":)";
+    faces[Status::MAKING_MOVE] = ":O";
+    faces[Status::GAME_OVER] = "X(";
+    faces[Status::WIN] = "B)";
 }
 
 int Game::checkMines(int x, int y) {
@@ -193,7 +207,7 @@ void Game::updateBar() {
     ss << std::setfill('0') << std::setw(3) << remainingMines;
     wprintw(bar, ss.str().c_str());
     wmove(bar, 1, 6);
-    wprintw(bar, ":)");
+    wprintw(bar, faces[Status::IDLE].c_str());
     wmove(bar, 1, 9);
     ss.str("");
     ss.clear();

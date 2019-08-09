@@ -42,9 +42,10 @@ class Game {
         int mines;
         int cursorX;
         int cursorY;
-        Selection selected;
-        bool gameEnd;
         int timerStart;
+        bool gameEnd;
+        Selection selected;
+        Status status;
         int checkMines(int x, int y);
         void draw();
         void generate(int mines);
@@ -143,14 +144,14 @@ void Game::generate(int mines) {
 }
 
 void Game::gameOver() {
+    status = Status::GAME_OVER;
+    draw();
+    wgetch(win);
     gameEnd = 1;
-    clear();
-    printw("Game over!\n");
-    refresh();
-    getch();
 }
 
 void Game::logic() {
+    status = Status::IDLE;
     selected = Selection::NONE;
     auto key = wgetch(win);
     switch (key) {
@@ -209,10 +210,12 @@ void Game::logic() {
 void Game::barUpdater() {
     int remainingMines = 10;
     int oldTimer = -1;
+    Status oldStatus = Status::IDLE;
     while (!gameEnd) {
         int timer = time(NULL) - timerStart;
-        if (timer != oldTimer) {
+        if (timer != oldTimer || status != oldStatus) {
             oldTimer = timer;
+            oldStatus = status;
             std::stringstream ss;
             ss << std::setfill('0') << std::setw(3) << remainingMines;
             std::string remainingMinesString = ss.str();
@@ -224,7 +227,7 @@ void Game::barUpdater() {
             wmove(bar, 1, 2);
             wprintw(bar, remainingMinesString.c_str());
             wmove(bar, 1, 6);
-            wprintw(bar, faces[Status::IDLE].c_str());
+            wprintw(bar, faces[status].c_str());
             wmove(bar, 1, 9);
             wprintw(bar, timerString.c_str());
             box(bar, 0, 0);

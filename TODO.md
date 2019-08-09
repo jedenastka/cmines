@@ -11,6 +11,7 @@
 
 [ ] Showing all mines after game over.
 [ ] Restarting games.
+[ ] Question marks
 
 ## Priority 3
 

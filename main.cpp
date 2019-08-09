@@ -18,7 +18,6 @@ class Game {
     public:
         Game(int widthArg, int heightArg, int minesArg);
         void start();
-        void barUpdater();
     private:
         enum class Selection {
             NONE,
@@ -53,6 +52,8 @@ class Game {
         void gameWin();
         void check();
         void logic();
+        void barUpdater();
+        int countMinesLeft();
 };
 
 Game::Game(int widthArg, int heightArg, int minesArg)
@@ -160,15 +161,12 @@ void Game::gameWin() {
 }
 
 void Game::check() {
-    int flags = 0;
     int discovered = 0;
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             if (selection[j][i] == Selection::DISCOVER && minefield[j][i] == 1) {
                 gameOver();
                 return;
-            } else if (selection[j][i] == Selection::FLAG) {
-                flags++;
             } else if (selection[j][i] == Selection::DISCOVER) {
                 discovered++;
             }
@@ -234,25 +232,40 @@ void Game::logic() {
     check();
 }
 
+int Game::countMinesLeft() {
+    int flags = 0;
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            if (selection[j][i] == Selection::FLAG) {
+                flags++;
+            }
+        }
+    }
+    int minesLeft = mines - flags;
+    return minesLeft;
+}
+
 void Game::barUpdater() {
-    int remainingMines = 10;
     int oldTimer = -1;
+    int oldMinesLeft = -1;
     Status oldStatus = Status::IDLE;
     while (!gameEnd) {
         int timer = time(NULL) - timerStart;
-        if (timer != oldTimer || status != oldStatus) {
+        int minesLeft = countMinesLeft();
+        if (timer != oldTimer || status != oldStatus || minesLeft != oldMinesLeft) {
             oldTimer = timer;
+            oldMinesLeft = minesLeft;
             oldStatus = status;
             std::stringstream ss;
-            ss << std::setfill('0') << std::setw(3) << remainingMines;
-            std::string remainingMinesString = ss.str();
+            ss << std::setfill('0') << std::setw(3) << minesLeft;
+            std::string minesLeftString = ss.str();
             ss.str("");
             ss.clear();
             ss << std::setfill('0') << std::setw(3) << timer;
             std::string timerString = ss.str();
             m_writeToConsole.lock();
             wmove(bar, 1, 2);
-            wprintw(bar, remainingMinesString.c_str());
+            wprintw(bar, minesLeftString.c_str());
             wmove(bar, 1, 6);
             wprintw(bar, faces[status].c_str());
             wmove(bar, 1, 9);
@@ -279,7 +292,7 @@ void Game::start() {
 int main() {
     srand(time(NULL));
     initscr();
-    Game game(10, 10, 1);
+    Game game(10, 10, 10);
     game.start();
     endwin();
 }

@@ -2,19 +2,19 @@
 
 ## Priority 1
 
-- Discovering all clear tiles around one clear tile.
-- Winning.
-- Mine counter.
-- Timer starting after first tile discovered and stopping on game over and win.
+[ ] Discovering all clear tiles around one clear tile.
+[x] Winning.
+[ ] Mine counter.
+[ ] Timer starting after first tile discovered and stopping on game over and win.
 
 ## Priority 2
 
-- Showing all mines after game over.
-- Restarting games.
+[ ] Showing all mines after game over.
+[ ] Restarting games.
 
 ## Priority 3
 
-- Menu.
-- Highcores.
-- Custom maps.
-- Colors.
+[ ] Menu.
+[ ] Highcores.
+[ ] Custom maps.
+[ ] Colors.

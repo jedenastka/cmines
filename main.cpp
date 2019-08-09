@@ -6,6 +6,9 @@
 #include <iomanip>
 #include <cstring>
 #include <map>
+#include <thread>
+#include <ctime>
+#include <mutex>
 
 int random(int from, int to) {
     return rand() % (to + 1) + from;
@@ -15,6 +18,7 @@ class Game {
     public:
         Game(int widthArg, int heightArg, int minesArg);
         void start();
+        void barUpdater();
     private:
         enum class Selection {
             NONE,
@@ -29,6 +33,7 @@ class Game {
         };
         WINDOW* win;
         WINDOW* bar;
+        std::mutex m_writeToConsole;
         std::map<Status, std::string> faces;
         bool minefield[10][10];
         Selection selection[10][10];
@@ -39,12 +44,12 @@ class Game {
         int cursorY;
         Selection selected;
         bool gameEnd;
+        int timerStart;
         int checkMines(int x, int y);
         void draw();
         void generate(int mines);
         void gameOver();
         void logic();
-        void updateBar();
 };
 
 Game::Game(int widthArg, int heightArg, int minesArg)
@@ -81,6 +86,7 @@ int Game::checkMines(int x, int y) {
 }
 
 void Game::draw() {
+    m_writeToConsole.lock();
     wrefresh(win);
     wclear(win);
     for (int i = 0; i < height; i++) {
@@ -114,6 +120,7 @@ void Game::draw() {
     }
     box(win, 0, 0);
     wrefresh(win);
+    m_writeToConsole.unlock();
 }
 
 void Game::generate(int mines) {
@@ -199,31 +206,44 @@ void Game::logic() {
     }
 }
 
-void Game::updateBar() {
+void Game::barUpdater() {
     int remainingMines = 10;
-    int timer = 999;
-    std::stringstream ss;
-    wmove(bar, 1, 2);
-    ss << std::setfill('0') << std::setw(3) << remainingMines;
-    wprintw(bar, ss.str().c_str());
-    wmove(bar, 1, 6);
-    wprintw(bar, faces[Status::IDLE].c_str());
-    wmove(bar, 1, 9);
-    ss.str("");
-    ss.clear();
-    ss << std::setfill('0') << std::setw(3) << timer;
-    wprintw(bar, ss.str().c_str());
-    box(bar, 0, 0);
-    wrefresh(bar);
+    int oldTimer = -1;
+    while (!gameEnd) {
+        int timer = time(NULL) - timerStart;
+        if (timer != oldTimer) {
+            oldTimer = timer;
+            std::stringstream ss;
+            ss << std::setfill('0') << std::setw(3) << remainingMines;
+            std::string remainingMinesString = ss.str();
+            ss.str("");
+            ss.clear();
+            ss << std::setfill('0') << std::setw(3) << timer;
+            std::string timerString = ss.str();
+            m_writeToConsole.lock();
+            wmove(bar, 1, 2);
+            wprintw(bar, remainingMinesString.c_str());
+            wmove(bar, 1, 6);
+            wprintw(bar, faces[Status::IDLE].c_str());
+            wmove(bar, 1, 9);
+            wprintw(bar, timerString.c_str());
+            box(bar, 0, 0);
+            wrefresh(bar);
+            m_writeToConsole.unlock();
+        }
+    }
 }
 
 void Game::start() {
     generate(mines);
-    updateBar();
+    // set the timer
+    timerStart = time(NULL);
+    std::thread barUpdaterThread(&Game::barUpdater, this);
     while (!gameEnd) {
         draw();
         logic();
     }
+    barUpdaterThread.join();
 }
 
 int main() {

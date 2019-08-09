@@ -50,6 +50,8 @@ class Game {
         void draw();
         void generate(int mines);
         void gameOver();
+        void gameWin();
+        void check();
         void logic();
 };
 
@@ -150,6 +152,33 @@ void Game::gameOver() {
     gameEnd = 1;
 }
 
+void Game::gameWin() {
+    status = Status::WIN;
+    draw();
+    wgetch(win);
+    gameEnd = 1;
+}
+
+void Game::check() {
+    int flags = 0;
+    int discovered = 0;
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            if (selection[j][i] == Selection::DISCOVER && minefield[j][i] == 1) {
+                gameOver();
+                return;
+            } else if (selection[j][i] == Selection::FLAG) {
+                flags++;
+            } else if (selection[j][i] == Selection::DISCOVER) {
+                discovered++;
+            }
+        }
+    }
+    if (width * height - mines == discovered) {
+        gameWin();
+    }
+}
+
 void Game::logic() {
     status = Status::IDLE;
     selected = Selection::NONE;
@@ -202,9 +231,7 @@ void Game::logic() {
             selection[cursorX][cursorY] = newValue;
         }
     }
-    if (selection[cursorX][cursorY] == Selection::DISCOVER && minefield[cursorX][cursorY] == 1) {
-        gameOver();
-    }
+    check();
 }
 
 void Game::barUpdater() {
@@ -252,7 +279,7 @@ void Game::start() {
 int main() {
     srand(time(NULL));
     initscr();
-    Game game(10, 10, 10);
+    Game game(10, 10, 1);
     game.start();
     endwin();
 }

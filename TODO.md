@@ -4,7 +4,7 @@
 
 [ ] Discovering all clear tiles around one clear tile.
 [x] Winning.
-[ ] Mine counter.
+[x] Mine counter.
 [ ] Timer starting after first tile discovered and stopping on game over and win.
 
 ## Priority 2

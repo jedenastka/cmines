@@ -17,3 +17,4 @@
 - Menu.
 - Highcores.
 - Custom maps.
+- Colors.

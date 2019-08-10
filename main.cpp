@@ -43,6 +43,7 @@ class Game {
         int cursorY;
         int timerStart;
         bool gameEnd;
+        bool timerOn;
         Selection selected;
         Status status;
         int checkMines(int x, int y);
@@ -65,6 +66,7 @@ Game::Game(int widthArg, int heightArg, int minesArg)
     , cursorY(0)
     , selected(Selection::NONE)
     , gameEnd(0)
+    , timerOn(0)
     {
     // make a win and configure
     win = newwin(height + 2, width + 4, 3, 0);
@@ -152,6 +154,7 @@ void Game::generate(int mines) {
 
 void Game::gameOver() {
     status = Status::GAME_OVER;
+    timerOn = 0;
     draw();
     wgetch(win);
     gameEnd = 1;
@@ -159,6 +162,7 @@ void Game::gameOver() {
 
 void Game::gameWin() {
     status = Status::WIN;
+    timerOn = 0;
     draw();
     wgetch(win);
     gameEnd = 1;
@@ -241,13 +245,14 @@ void Game::logic() {
             newValue = Selection::NONE;
         } else if (oldValue == Selection::NONE) {
             if (selected == Selection::DISCOVER) {
+                timerOn = 1;
                 discover(cursorX, cursorY);
                 update = 0;
             } else {
                 newValue = selected;
             }
         } else if ((oldValue == Selection::FLAG && selected == Selection::DISCOVER)
-        || oldValue == Selection::DISCOVER ) {
+        || oldValue == Selection::DISCOVER) {
             update = 0;
         }
         if (update) {
@@ -271,11 +276,21 @@ int Game::countMinesLeft() {
 }
 
 void Game::barUpdater() {
+    int timer = 0;
     int oldTimer = -1;
     int oldMinesLeft = -1;
+    bool oldTimerOn = 0;
     Status oldStatus = Status::IDLE;
     while (!gameEnd) {
-        int timer = time(NULL) - timerStart;
+        if (timerOn != oldTimerOn) {
+            oldTimerOn = timerOn;
+            if (timerOn) {
+                timerStart = time(NULL);
+            }
+        }
+        if (timerOn) {
+            timer = time(NULL) - timerStart;
+        }
         int minesLeft = countMinesLeft();
         if (timer != oldTimer || status != oldStatus || minesLeft != oldMinesLeft) {
             oldTimer = timer;
@@ -305,7 +320,6 @@ void Game::barUpdater() {
 void Game::start() {
     generate(mines);
     // set the timer
-    timerStart = time(NULL);
     std::thread barUpdaterThread(&Game::barUpdater, this);
     while (!gameEnd) {
         draw();

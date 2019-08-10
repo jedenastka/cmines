@@ -49,8 +49,7 @@ class Game {
         int checkMines(int x, int y);
         void draw();
         void generate(int mines);
-        void gameOver();
-        void gameWin();
+        void endGame(Status newStatus);
         void check();
         void discover(int x, int y);
         void logic();
@@ -152,16 +151,8 @@ void Game::generate(int mines) {
     }
 }
 
-void Game::gameOver() {
-    status = Status::GAME_OVER;
-    timerOn = 0;
-    draw();
-    wgetch(win);
-    gameEnd = 1;
-}
-
-void Game::gameWin() {
-    status = Status::WIN;
+void Game::endGame(Status newStatus) {
+    status = newStatus;
     timerOn = 0;
     draw();
     wgetch(win);
@@ -173,7 +164,7 @@ void Game::check() {
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             if (selection[j][i] == Selection::DISCOVER && minefield[j][i] == 1) {
-                gameOver();
+                endGame(Status::GAME_OVER);
                 return;
             } else if (selection[j][i] == Selection::DISCOVER) {
                 discovered++;
@@ -181,7 +172,7 @@ void Game::check() {
         }
     }
     if (width * height - mines == discovered) {
-        gameWin();
+        endGame(Status::WIN);
     }
 }
 

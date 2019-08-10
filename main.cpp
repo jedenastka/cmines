@@ -51,6 +51,7 @@ class Game {
         void gameOver();
         void gameWin();
         void check();
+        void discover(int x, int y);
         void logic();
         void barUpdater();
         int countMinesLeft();
@@ -78,9 +79,12 @@ Game::Game(int widthArg, int heightArg, int minesArg)
 }
 
 int Game::checkMines(int x, int y) {
+    if (minefield[x][y] == 1) {
+        return -1;
+    }
     int mines = 0;
     for (int i = x - 1; i <= x + 1; i++) {
-        for(int j = y - 1; j <= y + 1; j++) {
+        for (int j = y - 1; j <= y + 1; j++) {
             if (minefield[i][j] == 1 && i >= 0 && j >= 0 && i < height && j < width) {
                 mines++;
             }
@@ -177,6 +181,22 @@ void Game::check() {
     }
 }
 
+void Game::discover(int x, int y) {
+    if (selection[x][y] == Selection::NONE) {
+        selection[x][y] = Selection::DISCOVER;
+        if (checkMines(x, y) == 0) {
+            for (int i = x - 1; i <= x + 1; i++) {
+                for (int j = y - 1; j <= y + 1; j++) {
+                    if (!(i == x && j == y)
+                    && i >= 0 && i < width && j >= 0 && j < height) {
+                        discover(i, j);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void Game::logic() {
     status = Status::IDLE;
     selected = Selection::NONE;
@@ -220,7 +240,12 @@ void Game::logic() {
         if (oldValue == Selection::FLAG && selected == Selection::FLAG) {
             newValue = Selection::NONE;
         } else if (oldValue == Selection::NONE) {
-            newValue = selected;
+            if (selected == Selection::DISCOVER) {
+                discover(cursorX, cursorY);
+                update = 0;
+            } else {
+                newValue = selected;
+            }
         } else if ((oldValue == Selection::FLAG && selected == Selection::DISCOVER)
         || oldValue == Selection::DISCOVER ) {
             update = 0;

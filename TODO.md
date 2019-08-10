@@ -19,3 +19,9 @@
 [ ] Highcores.
 [ ] Custom maps.
 [ ] Colors.
+
+## Non-code things
+
+[ ] README.
+[ ] Easy building on Windows.
+[ ] Pre-built binaries.

@@ -79,6 +79,9 @@ Game::Game(int widthArg, int heightArg, int minesArg)
 }
 
 int Game::checkMines(int x, int y) {
+    if (minefield[x][y] == 1) {
+        return -1;
+    }
     int mines = 0;
     for (int i = x - 1; i <= x + 1; i++) {
         for (int j = y - 1; j <= y + 1; j++) {
@@ -185,7 +188,7 @@ void Game::discover(int x, int y) {
             for (int i = x - 1; i <= x + 1; i++) {
                 for (int j = y - 1; j <= y + 1; j++) {
                     if (!(i == x && j == y)
-                    && i > 0 && i <= width && j > 0 && j <= height) {
+                    && i >= 0 && i < width && j >= 0 && j < height) {
                         discover(i, j);
                     }
                 }

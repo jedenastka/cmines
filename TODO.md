@@ -20,6 +20,10 @@
 [ ] Custom maps.
 [ ] Colors.
 
+## Bugs
+
+[ ] Timer over 3 chars.
+
 ## Non-code things
 
 [ ] README.

@@ -16,7 +16,7 @@ int random(int from, int to) {
 
 class Game {
     public:
-        Game(int widthArg, int heightArg, int minesArg);
+        Game(int widthArg, int heightArg, int minesArg, int &r_scoreArg);
         void start();
     private:
         enum class Selection {
@@ -41,7 +41,7 @@ class Game {
         int mines;
         int cursorX;
         int cursorY;
-        int timerStart;
+        int &r_score;
         bool gameEnd;
         bool timerOn;
         Selection selected;
@@ -57,7 +57,7 @@ class Game {
         int countMinesLeft();
 };
 
-Game::Game(int widthArg, int heightArg, int minesArg)
+Game::Game(int widthArg, int heightArg, int minesArg, int &r_scoreArg)
     : width(widthArg)
     , height(heightArg)
     , mines(minesArg)
@@ -66,6 +66,7 @@ Game::Game(int widthArg, int heightArg, int minesArg)
     , selected(Selection::NONE)
     , gameEnd(0)
     , timerOn(0)
+    , r_score(r_scoreArg)
     {
     // make a win and configure
     win = newwin(height + 2, width + 4, 3, 0);
@@ -267,6 +268,7 @@ int Game::countMinesLeft() {
 }
 
 void Game::barUpdater() {
+    int timerStart;
     int timer = 0;
     int oldTimer = -1;
     int oldMinesLeft = -1;
@@ -306,6 +308,7 @@ void Game::barUpdater() {
             m_writeToConsole.unlock();
         }
     }
+    r_score = timer;
 }
 
 void Game::start() {
@@ -321,8 +324,11 @@ void Game::start() {
 
 int main() {
     srand(time(NULL));
+    int score;
+    int &r_score = score;
     initscr();
-    Game game(10, 10, 10);
+    Game game(10, 10, 10, r_score);
     game.start();
     endwin();
+    std::cout << score << '\n';
 }

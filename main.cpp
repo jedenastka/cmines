@@ -283,6 +283,9 @@ void Game::barUpdater() {
         }
         if (timerOn) {
             timer = time(NULL) - timerStart;
+            if (timer > 999) {
+                timer = 999;
+            }
         }
         int minesLeft = countMinesLeft();
         if (timer != oldTimer || status != oldStatus || minesLeft != oldMinesLeft) {

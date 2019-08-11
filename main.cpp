@@ -313,7 +313,6 @@ void Game::barUpdater() {
 
 void Game::start() {
     generate(mines);
-    // set the timer
     std::thread barUpdaterThread(&Game::barUpdater, this);
     while (!gameEnd) {
         draw();
@@ -327,7 +326,8 @@ int main() {
     int score;
     int &r_score = score;
     initscr();
-    Game game(10, 10, 10, r_score);
-    game.start();
+    Game *p_game = new Game(10, 10, 10, r_score);
+    p_game->start();
+    delete p_game;
     endwin();
 }

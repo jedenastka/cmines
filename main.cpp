@@ -330,5 +330,4 @@ int main() {
     Game game(10, 10, 10, r_score);
     game.start();
     endwin();
-    std::cout << score << '\n';
 }

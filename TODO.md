@@ -9,7 +9,7 @@
 
 ## Priority 2
 
-[ ] Showing all mines after game over.
+[ ] Showing all mines after game over and showing flags on all mines after winning.
 [ ] Restarting games.
 [ ] Question marks
 

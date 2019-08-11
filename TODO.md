@@ -22,7 +22,8 @@
 
 ## Bugs
 
-[ ] Timer over 3 chars.
+[x] Timer over 3 chars.
+[ ] Probably bad discovering.
 
 ## Non-code things
 

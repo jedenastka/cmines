@@ -30,10 +30,18 @@ class Game {
             WIN,
             GAME_OVER
         };
+        enum class Tile {
+            FIELD,
+            EMPTY,
+            FLAG,
+            QUESTION_MARK,
+            MINE
+        };
         WINDOW* win;
         WINDOW* bar;
         std::mutex m_writeToConsole;
         std::map<Status, std::string> faces;
+        std::map<Tile, char> tileset;
         bool minefield[10][10];
         Selection selection[10][10];
         int height;
@@ -73,11 +81,17 @@ Game::Game(int widthArg, int heightArg, int minesArg, int &r_scoreArg)
     keypad(win, 1);
     // make bar and configure
     bar = newwin(3, 14, 0, 0);
-    // initialise faces map
+    // initialize faces map
     faces[Status::IDLE] = ":)";
     faces[Status::MAKING_MOVE] = ":O";
     faces[Status::GAME_OVER] = "X(";
     faces[Status::WIN] = "B)";
+    // initialize tileset map
+    tileset[Tile::FIELD] = '%';
+    tileset[Tile::EMPTY] = ' ';
+    tileset[Tile::FLAG] = '!';
+    tileset[Tile::QUESTION_MARK] = '?';
+    tileset[Tile::MINE] = 'X';
 }
 
 int Game::checkMines(int x, int y) {
@@ -105,9 +119,9 @@ void Game::draw() {
             char tile;
             if (selection[j][i] == Selection::NONE) {
                 if (minefield[j][i] == 1 && status == Status::GAME_OVER) {
-                    tile = 'X';
+                    tile = tileset[Tile::MINE];
                 } else {
-                    tile = '%';
+                    tile = tileset[Tile::FIELD];
                 }
             } else if (selection[j][i] == Selection::DISCOVER) {
                 if (minefield[j][i] == 0) {
@@ -115,17 +129,17 @@ void Game::draw() {
                     if (mines > 0) {
                         tile = std::to_string(mines)[0];
                     } else {
-                        tile = ' ';
+                        tile = tileset[Tile::EMPTY];
                     }
                 } else {
                     if (status == Status::WIN) {
-                        tile = '!';
+                        tile = tileset[Tile::FLAG];
                     } else {
-                        tile = 'X';
+                        tile = tileset[Tile::MINE];
                     }
                 }
             } else if (selection[j][i] == Selection::FLAG) {
-                tile = '!';
+                tile = tileset[Tile::FLAG];
             }
             if (cursorOn) {
                 wattron(win, A_UNDERLINE);

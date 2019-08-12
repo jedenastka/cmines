@@ -104,7 +104,11 @@ void Game::draw() {
             bool cursorOn = j == cursorX && i == cursorY;
             char tile;
             if (selection[j][i] == Selection::NONE) {
-                tile = '%';
+                if (minefield[j][i] == 1 && status == Status::GAME_OVER) {
+                    tile = 'X';
+                } else {
+                    tile = '%';
+                }
             } else if (selection[j][i] == Selection::DISCOVER) {
                 if (minefield[j][i] == 0) {
                     int mines = checkMines(j, i);
@@ -114,7 +118,11 @@ void Game::draw() {
                         tile = ' ';
                     }
                 } else {
-                    tile = 'X';
+                    if (status == Status::WIN) {
+                        tile = '!';
+                    } else {
+                        tile = 'X';
+                    }
                 }
             } else if (selection[j][i] == Selection::FLAG) {
                 tile = '!';

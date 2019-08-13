@@ -60,7 +60,7 @@ class Game {
         void generate(int mines);
         void endGame(Status newStatus);
         void check();
-        void discover(int x, int y);
+        void dig(int x, int y);
         void logic();
         void barUpdater();
         int countMinesLeft();
@@ -207,23 +207,23 @@ void Game::endGame(Status newStatus) {
 }
 
 void Game::check() {
-    int discovered = 0;
+    int diged = 0;
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             if (selection[j][i] == Selection::DISCOVER && minefield[j][i] == 1) {
                 endGame(Status::GAME_OVER);
                 return;
             } else if (selection[j][i] == Selection::DISCOVER) {
-                discovered++;
+                diged++;
             }
         }
     }
-    if (width * height - mines == discovered) {
+    if (width * height - mines == diged) {
         endGame(Status::WIN);
     }
 }
 
-void Game::discover(int x, int y) {
+void Game::dig(int x, int y) {
     if (selection[x][y] == Selection::NONE || selection[x][y] == Selection::QUESTION_MARK) {
         selection[x][y] = Selection::DISCOVER;
         if (checkMines(x, y) == 0) {
@@ -231,7 +231,7 @@ void Game::discover(int x, int y) {
                 for (int j = y - 1; j <= y + 1; j++) {
                     if (!(i == x && j == y)
                     && i >= 0 && i < width && j >= 0 && j < height) {
-                        discover(i, j);
+                        dig(i, j);
                     }
                 }
             }
@@ -279,7 +279,7 @@ void Game::logic() {
         Selection oldValue = selection[cursorX][cursorY];
         Selection newValue;
         bool update = 1;
-        if (oldValue == Selection::DISCOVER) {
+        if (oldValue == Selection::DIG) {
 			update = 0;
 		} else if (selected == Selection::FLAG) {
             if (oldValue == Selection::FLAG) {
@@ -289,10 +289,10 @@ void Game::logic() {
             } else if (oldValue == Selection::NONE) {
 				newValue = Selection::FLAG;
 			}
-        } else if (selected == Selection::DISCOVER) {
+        } else if (selected == Selection::DIG) {
 			if (oldValue == Selection::NONE || oldValue == Selection::QUESTION_MARK) {
 				timerOn = 1;
-                discover(cursorX, cursorY);
+                dig(cursorX, cursorY);
                 update = 0;
 			} else if (oldValue == Selection::FLAG) {
 				update = 0;

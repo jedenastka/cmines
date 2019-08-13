@@ -5,12 +5,12 @@
 [x] Discovering all clear tiles around one clear tile.
 [x] Winning.
 [x] Mine counter.
-[x] Timer starting after first tile discovered and stopping on game over and win.
+[x] Timer starting after first tile digged and stopping on game over and win.
 
 ## Priority 2
 
 [x] Showing all mines after game over and showing flags on all mines after winning.
-[ ] Restarting games.
+[x] Restarting games.
 [x] Question marks
 
 ## Priority 3
@@ -23,7 +23,8 @@
 ## Bugs
 
 [x] Timer over 3 chars.
-[ ] Probably bad discovering.
+[ ] Bad digging?
+[ ] Starting a new game shows all mines for some reason.
 
 ## Non-code things
 

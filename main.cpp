@@ -23,7 +23,7 @@ class Game {
             NONE,
             FLAG,
             QUESTION_MARK,
-            DISCOVER
+            DIG
         };
         enum class Status {
             IDLE,
@@ -77,22 +77,24 @@ Game::Game(int widthArg, int heightArg, int minesArg, int &r_scoreArg)
     , timerOn(0)
     , r_score(r_scoreArg)
     {
-    // make a win and configure
-    win = newwin(height + 2, width + 4, 3, 0);
-    keypad(win, 1);
-    // make bar and configure
-    bar = newwin(3, 14, 0, 0);
-    // initialize faces map
-    faces[Status::IDLE] = ":)";
-    faces[Status::MAKING_MOVE] = ":O";
-    faces[Status::GAME_OVER] = "X(";
-    faces[Status::WIN] = "B)";
-    // initialize tileset map
-    tileset[Tile::FIELD] = '%';
-    tileset[Tile::EMPTY] = ' ';
-    tileset[Tile::FLAG] = '!';
-    tileset[Tile::QUESTION_MARK] = '?';
-    tileset[Tile::MINE] = 'X';
+		clear();
+		refresh();
+		// make a win and configure
+		win = newwin(height + 2, width + 4, 3, 0);
+		keypad(win, 1);
+		// make bar and configure
+		bar = newwin(3, 14, 0, 0);
+		// initialize faces map
+		faces[Status::IDLE] = ":)";
+		faces[Status::MAKING_MOVE] = ":O";
+		faces[Status::GAME_OVER] = "X(";
+		faces[Status::WIN] = "B)";
+		// initialize tileset map
+		tileset[Tile::FIELD] = '%';
+		tileset[Tile::EMPTY] = ' ';
+		tileset[Tile::FLAG] = '!';
+		tileset[Tile::QUESTION_MARK] = '?';
+		tileset[Tile::MINE] = 'X';
 }
 
 int Game::checkMines(int x, int y) {
@@ -112,8 +114,8 @@ int Game::checkMines(int x, int y) {
 
 void Game::draw() {
     m_writeToConsole.lock();
-    wrefresh(win);
     wclear(win);
+    wrefresh(win);
     for (int i = 0; i < height; i++) {
         for(int j = 0; j < width; j++) {
             bool cursorOn = j == cursorX && i == cursorY;
@@ -125,7 +127,7 @@ void Game::draw() {
             } else {
                 if (selectionOn == Selection::NONE) {
                     tile = tileset[Tile::FIELD];
-                } else if (selectionOn == Selection::DISCOVER) {
+                } else if (selectionOn == Selection::DIG) {
                     if (!mineOn) {
                         int mines = checkMines(j, i);
                         if (mines > 0) {
@@ -151,7 +153,7 @@ void Game::draw() {
                 case Selection::NONE:
                     x = 0;
                     break;
-                case Selection::DISCOVER:
+                case Selection::DIG:
                     x = 1;
                     break;
                 case Selection::FLAG:
@@ -164,7 +166,7 @@ void Game::draw() {
                     x = 9;
                     break;
             }
-            tile = std::to_string(x)[0];
+            tile = std::to_string(x)[0];*/
             if (cursorOn) {
                 wattron(win, A_UNDERLINE);
             }
@@ -172,7 +174,7 @@ void Game::draw() {
             if (cursorOn) {
                 wattroff(win, A_UNDERLINE);
             }
-        }*/
+        }
     }
     box(win, 0, 0);
     wrefresh(win);
@@ -210,10 +212,10 @@ void Game::check() {
     int diged = 0;
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            if (selection[j][i] == Selection::DISCOVER && minefield[j][i] == 1) {
+            if (selection[j][i] == Selection::DIG && minefield[j][i] == 1) {
                 endGame(Status::GAME_OVER);
                 return;
-            } else if (selection[j][i] == Selection::DISCOVER) {
+            } else if (selection[j][i] == Selection::DIG) {
                 diged++;
             }
         }
@@ -225,7 +227,7 @@ void Game::check() {
 
 void Game::dig(int x, int y) {
     if (selection[x][y] == Selection::NONE || selection[x][y] == Selection::QUESTION_MARK) {
-        selection[x][y] = Selection::DISCOVER;
+        selection[x][y] = Selection::DIG;
         if (checkMines(x, y) == 0) {
             for (int i = x - 1; i <= x + 1; i++) {
                 for (int j = y - 1; j <= y + 1; j++) {
@@ -260,7 +262,7 @@ void Game::logic() {
             gameEnd = 1;
             break;
         case '\n':
-            selected = Selection::DISCOVER;
+            selected = Selection::DIG;
             break;
         case ' ':
             selected = Selection::FLAG;
@@ -379,9 +381,23 @@ int main() {
     srand(time(NULL));
     int score;
     int &r_score = score;
+    bool newGame = 0;
     initscr();
-    Game *p_game = new Game(10, 10, 10, r_score);
-    p_game->start();
-    delete p_game;
+    do {
+		Game *p_game = new Game(10, 10, 10, r_score);
+		p_game->start();
+		delete p_game;
+		clear();
+		refresh();
+		printw("New game (y/N)? ");
+		char input = getch();
+		newGame = 0;
+		switch (input) {
+			case 'Y':
+			case 'y':
+				newGame = 1;
+				break;
+		}
+	} while (newGame);
     endwin();
 }

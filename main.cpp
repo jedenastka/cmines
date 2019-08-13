@@ -1,4 +1,4 @@
-#include <ncurses.h>
+#include <curses.h>
 #include <cstdlib>
 #include <ctime>
 #include <string>
@@ -97,6 +97,15 @@ Game::Game(int widthArg, int heightArg, int minesArg, int &r_scoreArg)
 	tileset[Tile::FLAG] = '!';
 	tileset[Tile::QUESTION_MARK] = '?';
 	tileset[Tile::MINE] = 'X';
+    // initialize ncurses color pairs
+    init_pair(1, COLOR_BLUE, COLOR_BLACK);
+    init_pair(2, COLOR_GREEN, COLOR_BLACK);
+    init_pair(3, COLOR_RED, COLOR_BLACK);
+    init_pair(4, COLOR_BLUE, COLOR_BLACK);
+    init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
+    init_pair(6, COLOR_CYAN, COLOR_BLACK);
+    init_pair(7, COLOR_WHITE, COLOR_BLACK);
+    init_pair(8, COLOR_WHITE, COLOR_BLACK);
 	// generate mines
 	generate(mines);
 }
@@ -133,6 +142,7 @@ void Game::draw() {
             Selection selectionOn = selection[j][i];
             bool mineOn = minefield[j][i];
             char tile;
+            int colorPair = 0;
             if (mineOn && status == Status::GAME_OVER) {
                 tile = tileset[Tile::MINE];
             } else {
@@ -142,6 +152,7 @@ void Game::draw() {
                     if (!mineOn) {
                         int mines = checkMines(j, i);
                         if (mines > 0) {
+                            colorPair = mines;
                             tile = std::to_string(mines)[0];
                         } else {
                             tile = tileset[Tile::EMPTY];
@@ -181,9 +192,15 @@ void Game::draw() {
             if (cursorOn) {
                 wattron(win, A_UNDERLINE);
             }
+            if (colorPair) {
+                    wattron(win, COLOR_PAIR(colorPair));
+            }
             mvwaddch(win, i + 1, j + 2, tile);
             if (cursorOn) {
                 wattroff(win, A_UNDERLINE);
+            }
+            if (colorPair) {
+                wattroff(win, COLOR_PAIR(colorPair));
             }
         }
     }
@@ -393,6 +410,9 @@ int main() {
     int &r_score = score;
     bool newGame = 0;
     initscr();
+    if (has_colors()) {
+        start_color();
+    }
     do {
 		Game *p_game = new Game(10, 10, 10, r_score);
 		p_game->start();

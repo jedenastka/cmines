@@ -18,7 +18,7 @@
 [ ] Menu.
 [ ] Highcores.
 [ ] Custom maps.
-[ ] Colors.
+[x] Colors.
 
 ## Bugs
 

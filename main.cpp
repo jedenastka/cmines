@@ -74,28 +74,31 @@ Game::Game(int widthArg, int heightArg, int minesArg, int &r_scoreArg)
     , cursorX(0)
     , cursorY(0)
     , selected(Selection::NONE)
+    , status(Status::IDLE)
     , gameEnd(0)
     , timerOn(0)
     , r_score(r_scoreArg)
-    {
-		clear();
-		refresh();
-		// make a win and configure
-		win = newwin(height + 2, width + 4, 3, 0);
-		keypad(win, 1);
-		// make bar and configure
-		bar = newwin(3, 14, 0, 0);
-		// initialize faces map
-		faces[Status::IDLE] = ":)";
-		faces[Status::MAKING_MOVE] = ":O";
-		faces[Status::GAME_OVER] = "X(";
-		faces[Status::WIN] = "B)";
-		// initialize tileset map
-		tileset[Tile::FIELD] = '%';
-		tileset[Tile::EMPTY] = ' ';
-		tileset[Tile::FLAG] = '!';
-		tileset[Tile::QUESTION_MARK] = '?';
-		tileset[Tile::MINE] = 'X';
+{
+	clear();
+	refresh();
+	// make a win and configure
+	win = newwin(height + 2, width + 4, 3, 0);
+	keypad(win, 1);
+	// make bar and configure
+	bar = newwin(3, 14, 0, 0);
+	// initialize faces map
+	faces[Status::IDLE] = ":)";
+	faces[Status::MAKING_MOVE] = ":O";
+	faces[Status::GAME_OVER] = "X(";
+	faces[Status::WIN] = "B)";
+	// initialize tileset map
+	tileset[Tile::FIELD] = '%';
+	tileset[Tile::EMPTY] = ' ';
+	tileset[Tile::FLAG] = '!';
+	tileset[Tile::QUESTION_MARK] = '?';
+	tileset[Tile::MINE] = 'X';
+	// generate mines
+	generate(mines);
 }
 
 Game::~Game() {
@@ -376,7 +379,6 @@ void Game::barUpdater() {
 }
 
 void Game::start() {
-    generate(mines);
     std::thread barUpdaterThread(&Game::barUpdater, this);
     while (!gameEnd) {
         draw();

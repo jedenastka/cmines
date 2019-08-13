@@ -24,7 +24,7 @@
 
 [x] Timer over 3 chars.
 [ ] Bad digging?
-[ ] ~~Starting a new game shows all mines for some reason.~~ Game status persists after starting new game.
+[x] ~~Starting a new game shows all mines for some reason.~~ Game status persists after starting new game.
 
 ## Non-code things
 

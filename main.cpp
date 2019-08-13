@@ -120,7 +120,7 @@ void Game::draw() {
             Selection selectionOn = selection[j][i];
             bool mineOn = minefield[j][i];
             char tile;
-            /*if (mineOn && status == Status::GAME_OVER) {
+            if (mineOn && status == Status::GAME_OVER) {
                 tile = tileset[Tile::MINE];
             } else {
                 if (selectionOn == Selection::NONE) {
@@ -145,8 +145,8 @@ void Game::draw() {
                 } else if (selectionOn == Selection::QUESTION_MARK) {
                     tile = tileset[Tile::QUESTION_MARK];
                 }
-            }*/
-            int x;
+            }
+            /*int x;
             switch (selectionOn) {
                 case Selection::NONE:
                     x = 0;
@@ -172,7 +172,7 @@ void Game::draw() {
             if (cursorOn) {
                 wattroff(win, A_UNDERLINE);
             }
-        }
+        }*/
     }
     box(win, 0, 0);
     wrefresh(win);

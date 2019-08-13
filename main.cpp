@@ -17,6 +17,7 @@ int random(int from, int to) {
 class Game {
     public:
         Game(int widthArg, int heightArg, int minesArg, int &r_scoreArg);
+        ~Game();
         void start();
     private:
         enum class Selection {
@@ -95,6 +96,13 @@ Game::Game(int widthArg, int heightArg, int minesArg, int &r_scoreArg)
 		tileset[Tile::FLAG] = '!';
 		tileset[Tile::QUESTION_MARK] = '?';
 		tileset[Tile::MINE] = 'X';
+}
+
+Game::~Game() {
+	delwin(win);
+	delwin(bar);
+	clear();
+	refresh();
 }
 
 int Game::checkMines(int x, int y) {
@@ -387,8 +395,6 @@ int main() {
 		Game *p_game = new Game(10, 10, 10, r_score);
 		p_game->start();
 		delete p_game;
-		clear();
-		refresh();
 		printw("New game (y/N)? ");
 		char input = getch();
 		newGame = 0;

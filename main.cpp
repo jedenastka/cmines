@@ -22,6 +22,7 @@ class Game {
         enum class Selection {
             NONE,
             FLAG,
+            QUESTION_MARK,
             DISCOVER
         };
         enum class Status {
@@ -116,31 +117,54 @@ void Game::draw() {
     for (int i = 0; i < height; i++) {
         for(int j = 0; j < width; j++) {
             bool cursorOn = j == cursorX && i == cursorY;
+            Selection selectionOn = selection[j][i];
+            bool mineOn = minefield[j][i];
             char tile;
-            if (selection[j][i] == Selection::NONE) {
-                if (minefield[j][i] == 1 && status == Status::GAME_OVER) {
-                    tile = tileset[Tile::MINE];
-                } else {
+            /*if (mineOn && status == Status::GAME_OVER) {
+                tile = tileset[Tile::MINE];
+            } else {
+                if (selectionOn == Selection::NONE) {
                     tile = tileset[Tile::FIELD];
-                }
-            } else if (selection[j][i] == Selection::DISCOVER) {
-                if (minefield[j][i] == 0) {
-                    int mines = checkMines(j, i);
-                    if (mines > 0) {
-                        tile = std::to_string(mines)[0];
+                } else if (selectionOn == Selection::DISCOVER) {
+                    if (!mineOn) {
+                        int mines = checkMines(j, i);
+                        if (mines > 0) {
+                            tile = std::to_string(mines)[0];
+                        } else {
+                            tile = tileset[Tile::EMPTY];
+                        }
                     } else {
-                        tile = tileset[Tile::EMPTY];
+                        if (status == Status::WIN) {
+                            tile = tileset[Tile::FLAG];
+                        } else {
+                            tile = tileset[Tile::MINE];
+                        }
                     }
-                } else {
-                    if (status == Status::WIN) {
-                        tile = tileset[Tile::FLAG];
-                    } else {
-                        tile = tileset[Tile::MINE];
-                    }
+                } else if (selectionOn == Selection::FLAG) {
+                    tile = tileset[Tile::FLAG];
+                } else if (selectionOn == Selection::QUESTION_MARK) {
+                    tile = tileset[Tile::QUESTION_MARK];
                 }
-            } else if (selection[j][i] == Selection::FLAG) {
-                tile = tileset[Tile::FLAG];
+            }*/
+            int x;
+            switch (selectionOn) {
+                case Selection::NONE:
+                    x = 0;
+                    break;
+                case Selection::DISCOVER:
+                    x = 1;
+                    break;
+                case Selection::FLAG:
+                    x = 2;
+                    break;
+                case Selection::QUESTION_MARK:
+                    x = 3;
+                    break;
+                default:
+                    x = 9;
+                    break;
             }
+            tile = std::to_string(x)[0];
             if (cursorOn) {
                 wattron(win, A_UNDERLINE);
             }
@@ -200,7 +224,7 @@ void Game::check() {
 }
 
 void Game::discover(int x, int y) {
-    if (selection[x][y] == Selection::NONE) {
+    if (selection[x][y] == Selection::NONE || selection[x][y] == Selection::QUESTION_MARK) {
         selection[x][y] = Selection::DISCOVER;
         if (checkMines(x, y) == 0) {
             for (int i = x - 1; i <= x + 1; i++) {
@@ -255,20 +279,25 @@ void Game::logic() {
         Selection oldValue = selection[cursorX][cursorY];
         Selection newValue;
         bool update = 1;
-        if (oldValue == Selection::FLAG && selected == Selection::FLAG) {
-            newValue = Selection::NONE;
-        } else if (oldValue == Selection::NONE) {
-            if (selected == Selection::DISCOVER) {
-                timerOn = 1;
+        if (oldValue == Selection::DISCOVER) {
+			update = 0;
+		} else if (selected == Selection::FLAG) {
+            if (oldValue == Selection::FLAG) {
+                newValue = Selection::QUESTION_MARK;
+            } else if (oldValue == Selection::QUESTION_MARK) {
+                newValue = Selection::NONE;
+            } else if (oldValue == Selection::NONE) {
+				newValue = Selection::FLAG;
+			}
+        } else if (selected == Selection::DISCOVER) {
+			if (oldValue == Selection::NONE || oldValue == Selection::QUESTION_MARK) {
+				timerOn = 1;
                 discover(cursorX, cursorY);
                 update = 0;
-            } else {
-                newValue = selected;
-            }
-        } else if ((oldValue == Selection::FLAG && selected == Selection::DISCOVER)
-        || oldValue == Selection::DISCOVER) {
-            update = 0;
-        }
+			} else if (oldValue == Selection::FLAG) {
+				update = 0;
+			}
+		}
         if (update) {
             selection[cursorX][cursorY] = newValue;
         }

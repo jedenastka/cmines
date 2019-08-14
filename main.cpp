@@ -105,7 +105,7 @@ Game::Game(int widthArg, int heightArg, int minesArg, int &r_scoreArg)
     init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
     init_pair(6, COLOR_CYAN, COLOR_BLACK);
     init_pair(7, COLOR_WHITE, COLOR_BLACK);
-    init_pair(8, COLOR_WHITE, COLOR_BLACK);
+    init_pair(8, COLOR_BLACK, COLOR_BLACK);
 	// generate mines
 	generate(mines);
 }
@@ -142,7 +142,7 @@ void Game::draw() {
             Selection selectionOn = selection[j][i];
             bool mineOn = minefield[j][i];
             char tile;
-            int colorPair = 0;
+            auto attributes = A_NORMAL;
             if (mineOn && status == Status::GAME_OVER) {
                 tile = tileset[Tile::MINE];
             } else {
@@ -152,7 +152,7 @@ void Game::draw() {
                     if (!mineOn) {
                         int mines = checkMines(j, i);
                         if (mines > 0) {
-                            colorPair = mines;
+                            attributes = attributes | COLOR_PAIR(mines) | A_BOLD;
                             tile = std::to_string(mines)[0];
                         } else {
                             tile = tileset[Tile::EMPTY];
@@ -169,6 +169,9 @@ void Game::draw() {
                 } else if (selectionOn == Selection::QUESTION_MARK) {
                     tile = tileset[Tile::QUESTION_MARK];
                 }
+            }
+            if (cursorOn) {
+                attributes = attributes | A_UNDERLINE;
             }
             /*int x;
             switch (selectionOn) {
@@ -189,19 +192,9 @@ void Game::draw() {
                     break;
             }
             tile = std::to_string(x)[0];*/
-            if (cursorOn) {
-                wattron(win, A_UNDERLINE);
-            }
-            if (colorPair) {
-                    wattron(win, COLOR_PAIR(colorPair));
-            }
+            wattron(win, attributes);
             mvwaddch(win, i + 1, j + 2, tile);
-            if (cursorOn) {
-                wattroff(win, A_UNDERLINE);
-            }
-            if (colorPair) {
-                wattroff(win, COLOR_PAIR(colorPair));
-            }
+            wattroff(win, attributes);
         }
     }
     box(win, 0, 0);

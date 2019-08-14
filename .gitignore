@@ -2,3 +2,5 @@
 cmines
 cmines.exe
 pdcurses.dll
+pdcurses.dll.pdmod
+pdcurses.dll.pdold

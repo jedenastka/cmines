@@ -407,18 +407,18 @@ int main() {
         start_color();
     }
     do {
-		Game *p_game = new Game(10, 10, 10, r_score);
-		p_game->start();
-		delete p_game;
-		printw("New game (y/N)? ");
-		char input = getch();
-		newGame = 0;
-		switch (input) {
-			case 'Y':
-			case 'y':
-				newGame = 1;
-				break;
-		}
-	} while (newGame);
+        Game *p_game = new Game(10, 10, 10, r_score);
+        p_game->start();
+        delete p_game;
+        printw("New game (y/N)? ");
+        char input = getch();
+        newGame = 0;
+        switch (input) {
+            case 'Y':
+            case 'y':
+                newGame = 1;
+                break;
+        }
+    } while (newGame);
     endwin();
 }

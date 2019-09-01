@@ -53,12 +53,11 @@ class Game {
         int cursorY;
         int &r_score;
         bool gameEnd;
-        bool timerOn;
-        Selection selected;
+        bool dug;
         Status status;
         int checkMines(int x, int y);
         void draw();
-        void generate(int mines);
+        void generate(int mines, bool firstDig = 0);
         void endGame(Status newStatus);
         void check();
         void dig(int x, int y);
@@ -73,10 +72,9 @@ Game::Game(int widthArg, int heightArg, int minesArg, int &r_scoreArg)
     , mines(minesArg)
     , cursorX(0)
     , cursorY(0)
-    , selected(Selection::NONE)
     , status(Status::IDLE)
     , gameEnd(0)
-    , timerOn(0)
+    , dug(0)
     , r_score(r_scoreArg)
 {
 	clear();
@@ -106,8 +104,6 @@ Game::Game(int widthArg, int heightArg, int minesArg, int &r_scoreArg)
     init_pair(6, COLOR_CYAN, COLOR_BLACK);
     init_pair(7, COLOR_BLACK, COLOR_BLACK);
     init_pair(8, COLOR_WHITE, COLOR_BLACK);
-	// generate mines
-	generate(mines);
 }
 
 Game::~Game() {
@@ -173,25 +169,6 @@ void Game::draw() {
             if (cursorOn) {
                 attributes = attributes | A_UNDERLINE;
             }
-            /*int x;
-            switch (selectionOn) {
-                case Selection::NONE:
-                    x = 0;
-                    break;
-                case Selection::DIG:
-                    x = 1;
-                    break;
-                case Selection::FLAG:
-                    x = 2;
-                    break;
-                case Selection::QUESTION_MARK:
-                    x = 3;
-                    break;
-                default:
-                    x = 9;
-                    break;
-            }
-            tile = std::to_string(x)[0];*/
             wattron(win, attributes);
             mvwaddch(win, i + 1, j + 2, tile);
             wattroff(win, attributes);
@@ -202,7 +179,7 @@ void Game::draw() {
     m_writeToConsole.unlock();
 }
 
-void Game::generate(int mines) {
+void Game::generate(int mines, bool firstDig) {
     for (int i = 0; i < height; i++) {
         for(int j = 0; j < width; j++) {
             minefield[j][i] = 0;
@@ -213,7 +190,8 @@ void Game::generate(int mines) {
         while (1) {
             int x = random(0, width - 1);
             int y = random(0, height - 1);
-            if (minefield[x][y] == 0) {
+            if (minefield[x][y] == 0 &&
+            ((firstDig && cursorX != x && cursorY != y) || !firstDig)) {
                 minefield[x][y] = 1;
                 break;
             }
@@ -223,7 +201,7 @@ void Game::generate(int mines) {
 
 void Game::endGame(Status newStatus) {
     status = newStatus;
-    timerOn = 0;
+    dug = 0;
     draw();
     wgetch(win);
     gameEnd = 1;
@@ -264,7 +242,7 @@ void Game::dig(int x, int y) {
 
 void Game::logic() {
     status = Status::IDLE;
-    selected = Selection::NONE;
+    Selection selected = Selection::NONE;
     auto key = wgetch(win);
     switch (key) {
         case KEY_UP:
@@ -314,7 +292,11 @@ void Game::logic() {
 			}
         } else if (selected == Selection::DIG) {
 			if (oldValue == Selection::NONE || oldValue == Selection::QUESTION_MARK) {
-				timerOn = 1;
+                if (!dug) {
+                    dug = 1;
+                    // generate mines
+                    generate(mines, dug);
+                }
                 dig(cursorX, cursorY);
                 update = 0;
 			} else if (oldValue == Selection::FLAG) {
@@ -346,16 +328,16 @@ void Game::barUpdater() {
     int timer = 0;
     int oldTimer = -1;
     int oldMinesLeft = -1;
-    bool oldTimerOn = 0;
+    bool oldDug = 0;
     Status oldStatus = Status::IDLE;
     while (!gameEnd) {
-        if (timerOn != oldTimerOn) {
-            oldTimerOn = timerOn;
-            if (timerOn) {
+        if (dug != oldDug) {
+            oldDug = dug;
+            if (dug) {
                 timerStart = time(NULL);
             }
         }
-        if (timerOn) {
+        if (dug) {
             timer = time(NULL) - timerStart;
             if (timer > 999) {
                 timer = 999;
@@ -390,6 +372,7 @@ void Game::barUpdater() {
 
 void Game::start() {
     std::thread barUpdaterThread(&Game::barUpdater, this);
+    bool oldDug = 0;
     while (!gameEnd) {
         draw();
         logic();
